@@ -1,8 +1,9 @@
 src/*.exe
-src/cannacoin
 src/cannacoind
+src/build.h
 src/test_cannacoin
-src/tags
+src/cannacoin-qt
+cannacoin-qt
 .*.swp
 *.*~*
 *.bak
@@ -10,29 +11,23 @@ src/tags
 *.orig
 *.o
 *.patch
-.cannacoin
-
-# Compilation and Qt preprocessor part
+*.P
+*.cannacoin
+*.directory
+#compilation and Qt preprocessor part
 *.qm
+.qmake.stash
 Makefile
-cannacoin-qt
-Cannacoin-Qt.app
-
-# Unit-tests
-Makefile.test
-cannacoin-qt_test
-
-# Resources cpp
+#resources cpp
 qrc_*.cpp
-
-# Qt creator
+#qt creator
 *.pro.user
-
-# Mac specific
+#mac specific
+build
 .DS_Store
 build
 
-!src/leveldb*/Makefile
+!src/leveldb/Makefile
 
 .qmake.stash
 Info.plist
