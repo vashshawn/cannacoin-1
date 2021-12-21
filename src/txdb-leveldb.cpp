@@ -1,5 +1,7 @@
-// Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2009-2021 Satoshi Nakamoto
+// Copyright (c) 2009-2021 The Bitcoin developers
+// Copyright (c) 2009-2021 The Litecoin developers
+// Copyright (c) 2009-2021 The Cannacoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,7 +14,7 @@
 #include <leveldb/env.h>
 #include <leveldb/cache.h>
 #include <leveldb/filter_policy.h>
-#include <memenv/memenv.h>
+#include <leveldb/db.h>
 
 #include "kernel.h"
 #include "checkpoints.h"
