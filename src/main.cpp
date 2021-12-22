@@ -2869,13 +2869,6 @@ CMerkleBlock::CMerkleBlock(const CBlock& block, CBloomFilter& filter)
     txn = CPartialMerkleTree(vHashes, vMatch);
 }
 
-
-
-
-
-
-
-
 uint256 CPartialMerkleTree::CalcHash(int height, unsigned int pos, const std::vector<uint256> &vTxid) {
     if (height == 0) {
         // hash at height 0 is the txids themself
@@ -2990,12 +2983,6 @@ uint256 CPartialMerkleTree::ExtractMatches(std::vector<uint256> &vMatch) {
     return hashMerkleRoot;
 }
 
-
-
-
-
-
-
 bool AbortNode(const std::string &strMessage) {
     strMiscWarning = strMessage;
     printf("*** %s\n", strMessage.c_str());
@@ -3006,13 +2993,19 @@ bool AbortNode(const std::string &strMessage) {
 
 bool CheckDiskSpace(uint64 nAdditionalBytes)
 {
-    uint64 nFreeBytesAvailable = filesystem::space(GetDataDir()).available;
+    uint64_t nFreeBytesAvailable = boost::filesystem::space(GetDataDir()).available;
 
     // Check for nMinDiskSpace bytes (currently 50MB)
     if (nFreeBytesAvailable < nMinDiskSpace + nAdditionalBytes)
         return AbortNode(_("Error: Disk space is low!"));
 
     return true;
+}
+
+static boost::filesystem::path BlockFilePath(unsigned int nFile)
+{
+    string strBlockFn = strprintf("blk%04u.dat", nFile);
+    return GetDataDir() / strBlockFn;
 }
 
 CCriticalSection cs_LastBlockFile;
