@@ -103,13 +103,13 @@ public:
         return true;
     }
 
-    template<typename K, typename V> bool Write(const K& key, const V& value, bool fSync = false) throw(leveldb_error) {
+    template<typename K, typename V> bool Write(const K& key, const V& value, bool fSync = false) (leveldb_error) {
         CLevelDBBatch batch;
         batch.Write(key, value);
         return WriteBatch(batch, fSync);
     }
 
-    template<typename K> bool Exists(const K& key) throw(leveldb_error) {
+    template<typename K> bool Exists(const K& key) (leveldb_error) {
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(ssKey.GetSerializeSize(key));
         ssKey << key;
@@ -126,13 +126,13 @@ public:
         return true;
     }
 
-    template<typename K> bool Erase(const K& key, bool fSync = false) throw(leveldb_error) {
+    template<typename K> bool Erase(const K& key, bool fSync = false) (leveldb_error) {
         CLevelDBBatch batch;
         batch.Erase(key);
         return WriteBatch(batch, fSync);
     }
 
-    bool WriteBatch(CLevelDBBatch &batch, bool fSync = false) throw(leveldb_error);
+    bool WriteBatch(CLevelDBBatch &batch, bool fSync = false) (leveldb_error);
 
     // not available for LevelDB; provide for compatibility with BDB
     bool Flush() {
