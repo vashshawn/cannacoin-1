@@ -36,12 +36,12 @@ static leveldb::Options GetOptions() {
 
 void init_blockindex(leveldb::Options& options, bool fRemoveOld = false) {
     // First time init.
-    filesystem::path directory = GetDataDir() / "txleveldb";
+    boost::filesystem::path directory = GetDataDir() / "txleveldb";
 
     if (fRemoveOld)
-        filesystem::remove_all(directory); // remove directory
+        boost::filesystem::remove_all(directory); // remove directory
 
-    filesystem::create_directory(directory);
+    boost::filesystem::create_directory(directory);
     printf("Opening LevelDB in %s\n", directory.string().c_str());
     leveldb::Status status = leveldb::DB::Open(options, directory.string(), &txdb);
     if (!status.ok()) {
