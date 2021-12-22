@@ -695,7 +695,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 #endif
 
     // ********************************************************* Step 5: verify wallet database integrity
-
+    #ifdef ENABLE_WALLET
     if (!fDisableWallet) {
         uiInterface.InitMessage(_("Verifying wallet..."));
 
@@ -726,7 +726,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 return false;
         }
 
-        if (filesystem::exists(GetDataDir() / "wallet.dat"))
+        if (boost::filesystem::exists(GetDataDir() / strWalletFileName))
         {
             CDBEnv::VerifyResult r = bitdb.Verify("wallet.dat", CWalletDB::Recover);
             if (r == CDBEnv::RECOVER_OK)
