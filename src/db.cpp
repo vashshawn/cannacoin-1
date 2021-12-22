@@ -63,11 +63,11 @@ bool CDBEnv::Open(const boost::filesystem::path& pathIn)
 
     boost::this_thread::interruption_point();
 
-    path = pathIn;
-    filesystem::path pathLogDir = path / "database";
-    filesystem::create_directory(pathLogDir);
-    filesystem::path pathErrorFile = path / "db.log";
-    printf("dbenv.open LogDir=%s ErrorFile=%s\n", pathLogDir.string().c_str(), pathErrorFile.string().c_str());
+    boost::filesystem::path pathDataDir = pathEnv;
+    strPath = pathDataDir.string();
+    boost::filesystem::path pathLogDir = pathDataDir / "database";
+    boost::filesystem::create_directory(pathLogDir);
+    boost::filesystem::path pathErrorFile = pathDataDir / "db.log";
 
     unsigned int nEnvFlags = 0;
     if (GetBoolArg("-privdb", true))
