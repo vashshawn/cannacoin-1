@@ -1,42 +1,13 @@
-src/*.exe
-src/cannacoind
-src/build.h
-src/test_cannacoin
-src/cannacoin-qt
-cannacoin-qt
-.*.swp
-*.*~*
-*.bak
-*.rej
-*.orig
-*.o
-*.patch
-*.P
-*.cannacoin
-*.directory
-#compilation and Qt preprocessor part
-*.qm
-.qmake.stash
-Makefile
-#resources cpp
-qrc_*.cpp
-#qt creator
-*.pro.user
-#mac specific
-build
 .DS_Store
-build
-
-!src/leveldb/Makefile
-
 .qmake.stash
-Info.plist
-Cannacoin-Qt.xcodeproj
-dist/
-*.dmg
-
-# Output of contrib/check-upstream.sh
-merge-*.txt
-
-*.sublime-project
-*.sublime-workspace
+Cannacoin-Qt.app/
+Makefile
+build/
+cannacoin-qt.pro.user
+src/.qmake.stash
+src/Makefile
+src/cannacoind
+Cannacoin-Qt.dmg
+Cannacoin-qt
+qrc_bitcoin.cpp
+*.qm
