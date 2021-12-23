@@ -1,4 +1,18 @@
-// Copyright (c) 2012 The Bitcoin developers
+// Copyright (c) 2012 - 2021 The Bitcoin developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#ifndef BITCOIN_LEVELDB_H
+#define BITCOIN_LEVELDB_H
+
+#include "serialize.h"
+
+#include <leveldb/db.h>
+#include <leveldb/write_batch.h>
+
+#include <boost/filesystem/path.hpp>
+
+class leveldb_error : public std::runtime_error
+{// Copyright (c) 2012 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_LEVELDB_H
@@ -103,13 +117,13 @@ public:
         return true;
     }
 
-    template<typename K, typename V> bool Write(const K& key, const V& value, bool fSync = false) (leveldb_error) {
+    template<typename K, typename V> bool Write(const K& key, const V& value, bool fSync = false) throw(leveldb_error) {
         CLevelDBBatch batch;
         batch.Write(key, value);
         return WriteBatch(batch, fSync);
     }
 
-    template<typename K> bool Exists(const K& key) (leveldb_error) {
+    template<typename K> bool Exists(const K& key) throw(leveldb_error) {
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(ssKey.GetSerializeSize(key));
         ssKey << key;
@@ -126,13 +140,13 @@ public:
         return true;
     }
 
-    template<typename K> bool Erase(const K& key, bool fSync = false) (leveldb_error) {
+    template<typename K> bool Erase(const K& key, bool fSync = false) throw(leveldb_error) {
         CLevelDBBatch batch;
         batch.Erase(key);
         return WriteBatch(batch, fSync);
     }
 
-    bool WriteBatch(CLevelDBBatch &batch, bool fSync = false) (leveldb_error);
+    bool WriteBatch(CLevelDBBatch &batch, bool fSync = false) throw(leveldb_error);
 
     // not available for LevelDB; provide for compatibility with BDB
     bool Flush() {
