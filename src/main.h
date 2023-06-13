@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2014 The Cannacoin developers
+// Copyright (c) 2009-2023 The Bitcoin developers
+// Copyright (c) 2014-2023 The Litedoge developers
+// Copyright (c) 2014-2023 The Cannacoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_MAIN_H
@@ -33,7 +34,7 @@ static const unsigned int MAX_BLOCK_SIZE = 1000000;                      // 1000
 /** Obsolete: maximum size for mined blocks */
 static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/4;         // 250KB  block soft limit
 /** Default for -blockmaxsize, maximum size for mined blocks **/
-static const unsigned int DEFAULT_BLOCK_MAX_SIZE = 250000;
+static const unsigned int DEFAULT_BLOCK_MAX_SIZE = 500000;
 /** Default for -blockprioritysize, maximum space for zero/low-fee transactions **/
 static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = 17000;
 /** The maximum size for transactions we're willing to relay/mine */
@@ -60,7 +61,7 @@ static const int64 DUST_HARD_LIMIT = 1000000;   // 0.01 CCN mininput
 static const int64 MAX_MONEY = 13140000 * COIN; // Maximum or compile warning, will fix in future release.
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
-static const int COINBASE_MATURITY = 50;
+static const int COINBASE_MATURITY = 3;
 /** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
 static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
 /** Maximum number of script-checking threads allowed */
@@ -214,14 +215,10 @@ uint256 WantedByOrphan(const CBlock* pblockOrphan);
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
 void StakeMiner(CWallet *pwallet);
 
+inline bool ProtocolRetargetingFixed(int nHeight) { return TestNet() || nHeight > 1345000; }
 
-
-
-
-
-
-
-
+inline int64_t PastDrift(int64_t nTime)   { return nTime - 10 * 60; } // up to 10 minutes from the past
+inline int64_t FutureDrift(int64_t nTime) { return nTime + 10 * 60; } // up to 10 minutes from the future
 
 bool GetWalletFile(CWallet* pwallet, std::string &strWalletFileOut);
 
