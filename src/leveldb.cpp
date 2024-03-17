@@ -4,29 +4,27 @@
 
 #include "leveldb.h"
 #include "util.h"
+#include "db.h"
+#include "main.h"
+
 
 #include <leveldb/env.h>
 #include <leveldb/cache.h>
 #include <leveldb/filter_policy.h>
 #include <memenv/memenv.h>
 
+#include <boost/version.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
-void HandleError(const leveldb::Status &status) throw(leveldb_error) {
-    if (status.ok())
-        return;
-    if (status.IsCorruption())
-        throw leveldb_error("Database corrupted");
-    if (status.IsIOError())
-        throw leveldb_error("Database I/O error");
-    if (status.IsNotFound())
-        throw leveldb_error("Database entry missing");
-    throw leveldb_error("Unknown database error");
-}
+using namespace std;
+using namespace boost;
+
+leveldb::DB *txdb; // global pointer for LevelDB object instance
 
 static leveldb::Options GetOptions(size_t nCacheSize) {
     leveldb::Options options;
-    options.block_cache = leveldb::NewLRUCache(nCacheSize / 2);
+    options.block_cache = leveldb::NewLRUCache(nCacheSize / 1048576);
     options.write_buffer_size = nCacheSize / 4; // up to two write buffers may be held in memory simultaneously
     options.filter_policy = leveldb::NewBloomFilterPolicy(10);
     options.compression = leveldb::kNoCompression;
