@@ -6,12 +6,26 @@ QT += core gui network
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE BOOST_BIND_GLOBAL_PLACEHOLDERS
 CONFIG += no_include_pwd
+CONFIG += static
 CONFIG += thread
-
 greaterThan(QT_MAJOR_VERSION, 4) {
     QT += widgets
-    DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+    QT_DISABLE_DEPRECATED_BEFORE=0
+} else {
+    QT += webkit
 }
+
+# QMAKE_CC=clang
+# QMAKE_CXX=clang++
+# QMAKE_LINK=clang++
+
+QMAKE_CXXFLAGS += -std=c++11
+
+freebsd-g++: QMAKE_TARGET.arch = $$QMAKE_HOST.arch
+linux-g++: QMAKE_TARGET.arch = $$QMAKE_HOST.arch
+linux-g++-32: QMAKE_TARGET.arch = i686
+linux-g++-64: QMAKE_TARGET.arch = x86_64
+win32-g++-cross: QMAKE_TARGET.arch = $$TARGET_PLATFORM
 
 # for boost 1.37, add -mt to the boost libraries
 # use: qmake BOOST_LIB_SUFFIX=-mt
@@ -23,20 +37,17 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 #    BOOST_INCLUDE_PATH, BOOST_LIB_PATH, BDB_INCLUDE_PATH,
 #    BDB_LIB_PATH, OPENSSL_INCLUDE_PATH and OPENSSL_LIB_PATH respectively
 
-=======
 QT += core gui network widgets # Added 'widgets' for Qt 5
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
 CONFIG += thread
 
-OBJECTS_DIR = build
-MOC_DIR = build
-UI_DIR = build
 
+# use: qmake "RELEASE=1"
 contains(RELEASE, 1) {
     message(Building Release Version)
     # Mac: compile for maximum compatibility (10.5, 32-bit)
-    macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.8 -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/
+    macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.13 -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/
 
     !windows:!macx {
         message(Static Link libraries enabled (linux only))
@@ -44,6 +55,11 @@ contains(RELEASE, 1) {
         LIBS += -Wl,-Bstatic
     }
 }
+
+OBJECTS_DIR = build
+MOC_DIR = build
+UI_DIR = build
+
 
 !win32 {
 # for extra security against potential buffer overflows: enable GCCs Stack Smashing Protection
@@ -56,30 +72,38 @@ QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
 win32:QMAKE_LFLAGS *= -Wl,--dynamicbase -Wl,--nxcompat
 win32:QMAKE_LFLAGS += -static-libgcc -static-libstdc++
 
-# use: qmake "USE_DBUS=1" or qmake "USE_DBUS=0"
-linux:count(USE_DBUS, 0) {
-    USE_DBUS=1
-}
-=======
+
     macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk
     macx:QMAKE_CFLAGS += -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk
     macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk
 }
 
 !win32 {
-    QMAKE_CXXFLAGS *= -fstack-protector-all
-    QMAKE_LFLAGS *= -fstack-protector-all
+# for extra security against potential buffer overflows: enable GCCs Stack Smashing Protection
+QMAKE_CXXFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
+QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
+# We need to exclude this for Windows cross compile with MinGW 4.2.x, as it will result in a non-working executable!
+# This can be enabled for Windows, when we switch to MinGW >= 4.4.x.
 }
-QMAKE_CXXFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2
+# for extra security on Windows: enable ASLR and DEP via GCC linker flags
 win32:QMAKE_LFLAGS *= -Wl,--dynamicbase -Wl,--nxcompat
-win32:QMAKE_LFLAGS *= -Wl,--large-address-aware
-win32:QMAKE_LFLAGS *= -static-libgcc -static-libstdc++
+win32:QMAKE_LFLAGS += -static-libgcc -static-libstdc++
+win32:QMAKE_LFLAGS *= -Wl,--large-address-aware -static
 
+
+# use: qmake "USE_QRCODE=1"
+# libqrencode (http://fukuchi.org/works/qrencode/index.en.html) must be installed for support
 contains(USE_QRCODE, 1) {
-    DEFINES += USE_QRCODE
-    LIBS += -lqrencode
+    message(Building with QRCode support)
+    DEFINES += USE_QRCODE=$$USE_QRCODE
+    INCLUDEPATH += $$QRENCODE_INCLUDE_PATH
+    LIBS += $$join(QRENCODE_LIB_PATH,,-L,) -lqrencode
 }
 
+# use: qmake "USE_UPNP=1" ( enabled by default; default)
+#  or: qmake "USE_UPNP=0" (disabled by default)
+#  or: qmake "USE_UPNP=-" (not supported)
+# miniupnpc (http://miniupnp.free.fr/files/) must be installed for support
 contains(USE_UPNP, -) {
     message(Building without UPNP support)
 } else {
@@ -93,7 +117,12 @@ contains(USE_UPNP, -) {
     win32:LIBS += -liphlpapi
 }
 
+# use: qmake "USE_DBUS=1" or qmake "USE_DBUS=0"
+linux:count(USE_DBUS, 0) {
+    USE_DBUS=1
+}
 contains(USE_DBUS, 1) {
+    message(Building with DBUS (Freedesktop notifications) support)
     DEFINES += USE_DBUS
     QT += dbus
 }
@@ -101,7 +130,10 @@ contains(USE_DBUS, 1) {
 contains(BITCOIN_NEED_QT_PLUGINS, 1) {
     DEFINES += BITCOIN_NEED_QT_PLUGINS
     QTPLUGIN += qcncodecs qjpcodecs qtwcodecs qkrcodecs qtaccessiblewidgets
-=======
+
+# use: qmake "USE_IPV6=1" ( enabled by default; default)
+#  or: qmake "USE_IPV6=0" (disabled by default)
+#  or: qmake "USE_IPV6=-" (not supported)
 contains(USE_IPV6, -) {
     message(Building without IPv6 support)
 } else {
@@ -114,19 +146,29 @@ contains(USE_IPV6, -) {
 INCLUDEPATH += src/leveldb/include src/leveldb/helpers
 LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
 SOURCES += src/txdb-leveldb.cpp
-
-genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
+!win32 {
+    # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
+    genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
+} else {
+    # make an educated guess about what the ranlib command is called
+    isEmpty(QMAKE_RANLIB) {
+        QMAKE_RANLIB = $$replace(QMAKE_STRIP, strip, ranlib)
+    }
+    LIBS += -lshlwapi
+    #genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX TARGET_OS=OS_WINDOWS_CROSSCOMPILE $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a && $$QMAKE_RANLIB $$PWD/src/leveldb/libleveldb.a && $$QMAKE_RANLIB $$PWD/src/leveldb/libmemenv.a
+}PT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a}
 genleveldb.target = $$PWD/src/leveldb/libleveldb.a
 genleveldb.depends = FORCE
 PRE_TARGETDEPS += $$PWD/src/leveldb/libleveldb.a
 QMAKE_EXTRA_TARGETS += genleveldb
+# Gross ugly hack that depends on qmake internals, unfortunately there is no other way to do it.
 QMAKE_CLEAN += $$PWD/src/leveldb/libleveldb.a; cd $$PWD/src/leveldb ; $(MAKE) clean
-
+  message(Building with Berkeley DB transaction index)
+    SOURCES += src/txdb-leveldb.cpp
+    
 # regenerate src/build.h
 !windows|contains(USE_BUILD_INFO, 1) {
     genbuild.depends = FORCE
-=======
-!win32|contains(USE_BUILD_INFO, 1) {
     genbuild.commands = cd $$PWD; /bin/sh share/genbuild.sh $$OUT_PWD/build/build.h
     genbuild.target = $$OUT_PWD/build/build.h
     PRE_TARGETDEPS += $$OUT_PWD/build/build.h
